@@ -3,6 +3,12 @@ import { fetchSeriesById, addRating, getRatings, BACKEND_URL } from "./api.js";
 const params = new URLSearchParams(window.location.search);
 const seriesId = params.get("id");
 
+function resolveImage(path, fallback) {
+    if (!path) return fallback;
+    if (path.startsWith("http")) return path;
+    return BACKEND_URL + path;
+}
+
 async function loadDetail() {
     if (!seriesId) {
         document.getElementById("detail-content").innerHTML = "<p>ID no válido.</p>";
@@ -10,19 +16,18 @@ async function loadDetail() {
     }
 
     const s = await fetchSeriesById(seriesId);
-
-    document.title = `${s.title} — Series Tracker`;
+    document.title = `${s.title} — Vault`;
 
     document.getElementById("detail-content").innerHTML = `
         <div class="detail-hero">
             <img
-                src="${s.image_path ? BACKEND_URL + s.image_path : 'https://placehold.co/220x330?text=Sin+imagen'}"
+                src="${resolveImage(s.image_path, 'https://placehold.co/220x330/111113/52505f?text=—')}"
                 alt="${s.title}"
             >
             <div class="detail-info">
                 <span class="badge badge-${s.status}">${s.status}</span>
                 <h2>${s.title}</h2>
-                <p>${s.genre || "Sin género"} ${s.year ? "· " + s.year : ""}</p>
+                <p class="meta">${s.genre || "Sin género"}${s.year ? " · " + s.year : ""}</p>
                 <p class="synopsis">${s.synopsis || "Sin sinopsis."}</p>
                 <div class="detail-actions">
                     <a href="index.html" class="back-link">← Volver</a>
@@ -35,10 +40,10 @@ async function loadDetail() {
             <div class="rating-form">
                 <input type="number" id="rating-score" placeholder="Score (0-10)" min="0" max="10" step="0.1">
                 <textarea id="rating-review" placeholder="Comentario (opcional)"></textarea>
-                <button id="btn-submit-rating">Publicar</button>
+                <button class="btn-primary" id="btn-submit-rating">Publicar</button>
             </div>
             <div id="ratings-list">
-                <p style="color: var(--text-muted); font-size: 0.85rem;">Cargando reseñas...</p>
+                <p style="color:var(--text3);font-size:13px">Cargando reseñas...</p>
             </div>
         </div>
     `;
@@ -52,7 +57,7 @@ async function loadRatings() {
     const container = document.getElementById("ratings-list");
 
     if (!ratings.length) {
-        container.innerHTML = `<p style="color: var(--text-muted); font-size: 0.85rem;">Sin reseñas aún. ¡Sé el primero!</p>`;
+        container.innerHTML = `<p style="color:var(--text3);font-size:13px">Sin reseñas aún. ¡Sé el primero!</p>`;
         return;
     }
 

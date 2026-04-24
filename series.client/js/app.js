@@ -8,10 +8,15 @@ let currentOrder = "desc";
 let currentStatus = "";
 let allSeriesCache = [];
 
+function resolveImage(path) {
+    if (!path) return 'https://placehold.co/300x450/111113/52505f?text=—';
+    if (path.startsWith("http")) return path;
+    return BACKEND_URL + path;
+}
+
 async function loadSeries() {
     const params = { page: currentPage, q: currentSearch, sort: currentSort, order: currentOrder };
     const { data, total_pages } = await fetchSeries(params);
-    // Filtro de status en cliente (el backend no tiene ese filtro)
     const filtered = currentStatus ? data.filter(s => s.status === currentStatus) : data;
     allSeriesCache = data;
     renderCards(filtered);
@@ -27,7 +32,7 @@ function renderCards(series) {
     grid.innerHTML = series.map(s => `
         <div class="card" data-id="${s.id}">
             <div class="card-thumb">
-                <img src="${s.image_path ? BACKEND_URL + s.image_path : 'https://placehold.co/300x450/111113/52505f?text=—'}" alt="${s.title}">
+                <img src="${resolveImage(s.image_path)}" alt="${s.title}">
                 <div class="card-overlay">
                     <div class="card-overlay-actions">
                         <button onclick="openEditModal(${s.id})">Editar</button>
@@ -56,20 +61,17 @@ function renderPagination(totalPages) {
     }
 }
 
-// Búsqueda
 document.getElementById("search-input").addEventListener("input", e => {
     currentSearch = e.target.value;
     currentPage = 1;
     loadSeries();
 });
 
-// Sort
 document.getElementById("sort-select").addEventListener("change", e => {
     [currentSort, currentOrder] = e.target.value.split("-");
     loadSeries();
 });
 
-// Export dropdown
 const exportBtn = document.getElementById("btn-export");
 const exportMenu = document.getElementById("export-menu");
 exportBtn.addEventListener("click", e => {
@@ -81,14 +83,12 @@ document.addEventListener("click", () => exportMenu.classList.remove("open"));
 document.getElementById("btn-csv").addEventListener("click", () => { exportCSV(allSeriesCache); exportMenu.classList.remove("open"); });
 document.getElementById("btn-xlsx").addEventListener("click", () => { exportXLSX(allSeriesCache); exportMenu.classList.remove("open"); });
 
-// Filter panel toggle
 const filterPanel = document.getElementById("filter-panel");
 document.getElementById("btn-filter").addEventListener("click", e => {
     e.stopPropagation();
     filterPanel.classList.toggle("open");
 });
 
-// Filter chips
 document.querySelectorAll(".filter-chip").forEach(chip => {
     chip.addEventListener("click", () => {
         document.querySelectorAll(".filter-chip").forEach(c => c.classList.remove("active"));
@@ -99,13 +99,11 @@ document.querySelectorAll(".filter-chip").forEach(chip => {
     });
 });
 
-// File input label
 document.getElementById("form-image").addEventListener("change", e => {
     const file = e.target.files[0];
     document.getElementById("file-label-text").textContent = file ? file.name : "Subir imagen (JPG, PNG, WebP · máx 1 MB)";
 });
 
-// Modal
 const modal = document.getElementById("modal");
 document.getElementById("btn-new").addEventListener("click", () => openModal());
 
