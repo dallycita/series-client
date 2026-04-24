@@ -9,7 +9,8 @@ Cliente web para gestionar una lista de series. Construido con HTML, CSS y JavaS
 
 ## Screenshot
 
-![App funcionando](screenshot.png) *(reemplazar con screenshot real)*
+<img width="1861" height="905" alt="image" src="https://github.com/user-attachments/assets/b650c51d-083e-4884-803e-524c5cb97590" />
+
 
 ---
 
