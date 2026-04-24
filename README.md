@@ -3,7 +3,7 @@
 Cliente web para gestionar una lista de series. Construido con HTML, CSS y JavaScript vanilla puro — sin frameworks, sin librerías externas, solo `fetch()` y el DOM.
 
 🔗 **App en producción:** https://series-client.netlify.app  
-🔗 **Repositorio del backend:** https://github.com/dallycita/series-api *(actualizar con tu link real)*
+🔗 **Repositorio del backend:** https://github.com/dallycita/series-api
 
 ---
 
