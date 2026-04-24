@@ -83,6 +83,8 @@ function openModal(series = null) {
     document.getElementById("form-status").value = series?.status || "pendiente";
     document.getElementById("form-year").value = series?.year || "";
     document.getElementById("form-synopsis").value = series?.synopsis || "";
+    document.getElementById("form-image").dataset.currentPath = series?.image_path || "";
+    document.getElementById("form-image").value = ""; // limpia el file input
     modal.classList.remove("hidden");
 }
 
@@ -91,12 +93,17 @@ document.getElementById("modal-close").addEventListener("click", () => modal.cla
 document.getElementById("series-form").addEventListener("submit", async e => {
     e.preventDefault();
     const id = document.getElementById("form-id").value;
-    const imageFile = document.getElementById("form-image").files[0];
+    const imageInput = document.getElementById("form-image");
+    const imageFile = imageInput.files[0];
 
     let image_path = null;
+
     if (imageFile) {
+        // Se subió una imagen nueva → usarla
         const uploaded = await uploadImage(imageFile);
         image_path = uploaded.image_path;
+    } else if (id) {
+        image_path = imageInput.dataset.currentPath || null;
     }
 
     const payload = {
@@ -105,7 +112,7 @@ document.getElementById("series-form").addEventListener("submit", async e => {
         status: document.getElementById("form-status").value,
         year: parseInt(document.getElementById("form-year").value) || null,
         synopsis: document.getElementById("form-synopsis").value,
-        ...(image_path && { image_path })
+        image_path: image_path
     };
 
     if (id) {

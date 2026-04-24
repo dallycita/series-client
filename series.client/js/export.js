@@ -73,6 +73,19 @@ export function exportXLSX(seriesList) {
     triggerDownload(blob, "series.xlsx");
 }
 
+// ✅ FIX: función que faltaba — crea un <a> temporal y dispara la descarga
+function triggerDownload(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
 function buildZip(files) {
     const encoder = new TextEncoder();
     const parts = [];
@@ -116,9 +129,9 @@ function u32(n) { const b = new Uint8Array(4); new DataView(b.buffer).setUint32(
 function localFileHeader(nameBytes, dataBytes) {
     const crc = crc32(dataBytes);
     return concat([
-        new Uint8Array([0x50,0x4B,0x03,0x04]), // signature
-        u16(20), u16(0), u16(0),               // version, flags, compression (stored)
-        u16(0), u16(0),                         // mod time, mod date
+        new Uint8Array([0x50,0x4B,0x03,0x04]),
+        u16(20), u16(0), u16(0),
+        u16(0), u16(0),
         u32(crc), u32(dataBytes.length), u32(dataBytes.length),
         u16(nameBytes.length), u16(0),
         nameBytes
