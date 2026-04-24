@@ -1,9 +1,7 @@
-import { fetchSeriesById, addRating, getRatings } from "./api.js";
+import { fetchSeriesById, addRating, getRatings, BACKEND_URL } from "./api.js";
 
 const params = new URLSearchParams(window.location.search);
 const seriesId = params.get("id");
-
-const BACKEND_URL = "https://series-api-xxxx.onrender.com"; // cambia por tu URL real
 
 async function loadDetail() {
     if (!seriesId) {

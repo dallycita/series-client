@@ -1,4 +1,4 @@
-import { fetchSeries, createSeries, updateSeries, deleteSeries, uploadImage } from "./api.js";
+import { fetchSeries, createSeries, updateSeries, deleteSeries, uploadImage, BACKEND_URL } from "./api.js";
 import { exportCSV, exportXLSX } from "./export.js";
 
 let currentPage = 1;
@@ -23,7 +23,7 @@ function renderCards(series) {
     const grid = document.getElementById("series-grid");
     grid.innerHTML = series.map(s => `
         <div class="card" data-id="${s.id}">
-            <img src="${s.image_path ? 'https://series-api-pbls.onrender.com' + s.image_path : 'https://placehold.co/300x450?text=Sin+imagen'}" alt="${s.title}">
+            <img src="${s.image_path ? BACKEND_URL + s.image_path : 'https://placehold.co/300x450?text=Sin+imagen'}" alt="${s.title}">
             <div class="card-info">
                 <span class="badge badge-${s.status}">${s.status}</span>
                 <h3><a href="detail.html?id=${s.id}">${s.title}</a></h3>

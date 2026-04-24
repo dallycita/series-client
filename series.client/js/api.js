@@ -1,4 +1,4 @@
-const BASE_URL = "https://series-api-xxxx.onrender.com";
+const BASE_URL = "http://localhost:8000";
 
 export async function fetchSeries({ page = 1, limit = 10, q = "", sort = "created_at", order = "desc" } = {}) {
     const params = new URLSearchParams({ page, limit, q, sort, order });
@@ -64,3 +64,5 @@ export async function getRatings(seriesId) {
     if (!res.ok) throw new Error("Error al obtener ratings");
     return res.json();
 }
+
+export const BACKEND_URL = BASE_URL;

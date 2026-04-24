@@ -1,17 +1,57 @@
+export function exportCSV(seriesList) {
+    const headers = ["ID", "Título", "Género", "Estado", "Año", "Sinopsis"];
+    const rows = seriesList.map(s => [
+        s.id,
+        `"${(s.title || "").replace(/"/g, '""')}"`,
+        `"${(s.genre || "").replace(/"/g, '""')}"`,
+        s.status || "",
+        s.year || "",
+        `"${(s.synopsis || "").replace(/"/g, '""')}"`
+    ]);
+    const csv = ["sep=,", headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+    triggerDownload(blob, "series.csv");
+}
+
 export function exportXLSX(seriesList) {
-    const escape = str => (str || "").toString()
-        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const esc = str => (str || "").toString()
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
 
-    const rows = seriesList.map(s => `
-        <row>
-            <c t="inlineStr"><is><t>${escape(s.title)}</t></is></c>
-            <c t="inlineStr"><is><t>${escape(s.genre)}</t></is></c>
-            <c t="inlineStr"><is><t>${escape(s.status)}</t></is></c>
-            <c><v>${s.year || ""}</v></c>
-            <c t="inlineStr"><is><t>${escape(s.synopsis)}</t></is></c>
-        </row>`).join("");
+    const dataRows = seriesList.map(s => `<row>
+      <c t="inlineStr"><is><t>${esc(s.title)}</t></is></c>
+      <c t="inlineStr"><is><t>${esc(s.genre)}</t></is></c>
+      <c t="inlineStr"><is><t>${esc(s.status)}</t></is></c>
+      <c t="inlineStr"><is><t>${s.year || ""}</t></is></c>
+      <c t="inlineStr"><is><t>${esc(s.synopsis)}</t></is></c>
+    </row>`).join("\n");
 
-    const sheet = `<?xml version="1.0" encoding="UTF-8"?>
+    const files = {
+        "[Content_Types].xml": `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+  <Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
+</Types>`,
+        "_rels/.rels": `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
+</Relationships>`,
+        "xl/workbook.xml": `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+          xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <sheets>
+    <sheet name="Series" sheetId="1" r:id="rId1"/>
+  </sheets>
+</workbook>`,
+        "xl/_rels/workbook.xml.rels": `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
+</Relationships>`,
+        "xl/worksheets/sheet1.xml": `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
   <sheetData>
     <row>
@@ -21,43 +61,15 @@ export function exportXLSX(seriesList) {
       <c t="inlineStr"><is><t>Año</t></is></c>
       <c t="inlineStr"><is><t>Sinopsis</t></is></c>
     </row>
-    ${rows}
+    ${dataRows}
   </sheetData>
-</worksheet>`;
-
-    const rels = `<?xml version="1.0" encoding="UTF-8"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
-</Relationships>`;
-
-    const workbook = `<?xml version="1.0" encoding="UTF-8"?>
-<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
-          xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
-  <sheets><sheet name="Series" sheetId="1" r:id="rId1"/></sheets>
-</workbook>`;
-
-    const contentTypes = `<?xml version="1.0" encoding="UTF-8"?>
-<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
-  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
-  <Default Extension="xml" ContentType="application/xml"/>
-  <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
-  <Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
-</Types>`;
-
-    // Construir ZIP manualmente
-    const files = {
-        "[Content_Types].xml": contentTypes,
-        "_rels/.rels": `<?xml version="1.0" encoding="UTF-8"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
-</Relationships>`,
-        "xl/workbook.xml": workbook,
-        "xl/_rels/workbook.xml.rels": rels,
-        "xl/worksheets/sheet1.xml": sheet
+</worksheet>`
     };
 
-    const zip = buildZip(files);
-    const blob = new Blob([zip], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    const zipBytes = buildZip(files);
+    const blob = new Blob([zipBytes], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    });
     triggerDownload(blob, "series.xlsx");
 }
 
