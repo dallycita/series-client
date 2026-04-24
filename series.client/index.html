@@ -3,50 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Series Tracker</title>
+    <title>Vault — Series Tracker</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
     <header>
-        <h1>Series Tracker</h1>
-        <button id="btn-new">+ Nueva serie</button>
+        <div class="logo">
+            <div class="logo-mark">V</div>
+            <span class="logo-text">Vault<em>.</em></span>
+        </div>
+        <div class="header-right">
+            <button class="btn-primary" id="btn-new">+ Nueva serie</button>
+        </div>
     </header>
 
     <main>
         <div class="toolbar">
-            <input type="text" id="search-input" placeholder="Buscar serie...">
-            <select id="sort-select">
-                <option value="created_at-desc">Más recientes</option>
-                <option value="title-asc">Título A-Z</option>
-                <option value="title-desc">Título Z-A</option>
-                <option value="year-desc">Año (nuevo primero)</option>
-                <option value="year-asc">Año (antiguo primero)</option>
-            </select>
-            <button id="btn-csv">Exportar CSV</button>
-            <button id="btn-xlsx">Exportar Excel</button>
+            <div class="search-wrap">
+                <svg class="icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+                </svg>
+                <input type="text" id="search-input" placeholder="Buscar serie...">
+                <button class="btn-filter" id="btn-filter" title="Filtros">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="4" y1="6" x2="20" y2="6"/>
+                        <line x1="7" y1="12" x2="17" y2="12"/>
+                        <line x1="10" y1="18" x2="14" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="select-wrap">
+                <select id="sort-select">
+                    <option value="created_at-desc">Más recientes</option>
+                    <option value="title-asc">Título A–Z</option>
+                    <option value="title-desc">Título Z–A</option>
+                    <option value="year-desc">Año (nuevo)</option>
+                    <option value="year-asc">Año (antiguo)</option>
+                </select>
+                <span class="chevron"><span class="chevron-icon"></span></span>
+            </div>
+
+            <div class="export-wrap">
+                <button class="btn-export" id="btn-export" title="Exportar">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                </button>
+                <div class="export-menu" id="export-menu">
+                    <button id="btn-csv">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        Exportar CSV
+                    </button>
+                    <button id="btn-xlsx">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+                        Exportar Excel
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel de filtros por estado -->
+        <div class="filter-panel" id="filter-panel">
+            <span class="filter-label">Estado</span>
+            <button class="filter-chip active" data-status="">Todos</button>
+            <button class="filter-chip" data-status="viendo">Viendo</button>
+            <button class="filter-chip" data-status="pendiente">Pendiente</button>
+            <button class="filter-chip" data-status="completada">Completada</button>
+            <button class="filter-chip" data-status="abandonada">Abandonada</button>
         </div>
 
         <div id="series-grid"></div>
         <div id="pagination"></div>
     </main>
 
-    <!-- Modal crear/editar -->
+    <!-- Modal -->
     <div id="modal" class="hidden">
         <div class="modal-box">
-            <h2 id="modal-title">Nueva serie</h2>
-            <button id="modal-close">✕</button>
+            <div class="modal-header">
+                <h2 id="modal-title">Nueva serie</h2>
+                <button id="modal-close">✕</button>
+            </div>
             <form id="series-form">
                 <input type="hidden" id="form-id">
                 <input type="text" id="form-title" placeholder="Título *" required>
-                <input type="text" id="form-genre" placeholder="Género">
+                <div class="form-row">
+                    <input type="text" id="form-genre" placeholder="Género">
+                    <input type="number" id="form-year" placeholder="Año" min="1900" max="2100">
+                </div>
                 <select id="form-status">
                     <option value="pendiente">Pendiente</option>
                     <option value="viendo">Viendo</option>
                     <option value="completada">Completada</option>
                     <option value="abandonada">Abandonada</option>
                 </select>
-                <input type="number" id="form-year" placeholder="Año" min="1900" max="2100">
                 <textarea id="form-synopsis" placeholder="Sinopsis"></textarea>
+                <div class="form-divider"></div>
+                <label class="file-label" for="form-image">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <span id="file-label-text">Subir imagen (JPG, PNG, WebP · máx 1 MB)</span>
+                </label>
                 <input type="file" id="form-image" accept="image/jpeg,image/png,image/webp">
                 <button type="submit">Guardar</button>
             </form>

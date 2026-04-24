@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:8000";
+const BASE_URL = "https://series-api-pbls.onrender.com";
 
 export async function fetchSeries({ page = 1, limit = 10, q = "", sort = "created_at", order = "desc" } = {}) {
     const params = new URLSearchParams({ page, limit, q, sort, order });
